@@ -1,9 +1,10 @@
 # ============================================================
 # EDUPATH PAKISTAN
-# COMPLETE STREAMLIT APPLICATION
+# Complete Streamlit Application
 # ============================================================
 
 import os
+import re
 from io import BytesIO
 
 import streamlit as st
@@ -15,19 +16,350 @@ from reportlab.lib.enums import TA_CENTER
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
-    Spacer
+    Spacer,
+    PageBreak,
 )
 from reportlab.lib.units import inch
 
 
 # ============================================================
-# STREAMLIT PAGE CONFIG
+# PAGE CONFIGURATION
 # ============================================================
 
 st.set_page_config(
     page_title="EduPath Pakistan",
     page_icon="🎓",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+
+# ============================================================
+# CUSTOM CSS
+# ============================================================
+
+st.markdown(
+    """
+<style>
+
+/* ==========================================================
+   GLOBAL
+   ========================================================== */
+
+html, body, [class*="css"] {
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+.block-container {
+    max-width: 1250px;
+    padding-top: 1.5rem;
+    padding-bottom: 3rem;
+}
+
+/* Hide Streamlit footer */
+footer {
+    visibility: hidden;
+}
+
+/* ==========================================================
+   HERO
+   ========================================================== */
+
+.edupath-hero {
+    background: linear-gradient(
+        135deg,
+        #eef4ff 0%,
+        #f8fbff 55%,
+        #e6efff 100%
+    );
+
+    border: 1px solid #d8e5ff;
+    border-radius: 24px;
+
+    padding: 44px 30px;
+    margin-bottom: 28px;
+
+    text-align: center;
+
+    box-shadow:
+        0 10px 35px rgba(15, 23, 42, 0.08);
+}
+
+.edupath-title {
+    color: #1e40af !important;
+
+    font-size: 46px;
+    line-height: 1.15;
+
+    font-weight: 800;
+
+    margin: 0 0 12px 0;
+}
+
+.edupath-subtitle {
+    color: #0f172a !important;
+
+    font-size: 21px;
+
+    font-weight: 700;
+
+    margin-bottom: 10px;
+}
+
+.edupath-description {
+    color: #475569 !important;
+
+    font-size: 16px;
+
+    font-weight: 500;
+}
+
+
+/* ==========================================================
+   INFO CARDS
+   ========================================================== */
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.95);
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 18px;
+
+    padding: 22px;
+
+    min-height: 145px;
+
+    box-shadow:
+        0 5px 18px rgba(15, 23, 42, 0.06);
+
+    margin-bottom: 8px;
+}
+
+.feature-card h3 {
+    color: #0f172a !important;
+
+    margin-top: 0;
+
+    margin-bottom: 10px;
+
+    font-size: 18px;
+}
+
+.feature-card p {
+    color: #475569 !important;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* ==========================================================
+   STATUS CARD
+   ========================================================== */
+
+.profile-status {
+    background: #eff6ff;
+
+    border-left: 5px solid #2563eb;
+
+    border-radius: 12px;
+
+    padding: 14px 16px;
+
+    color: #1e3a8a !important;
+
+    margin-bottom: 15px;
+}
+
+
+/* ==========================================================
+   SECTION HEADINGS
+   ========================================================== */
+
+.section-title {
+    font-size: 27px;
+
+    font-weight: 800;
+
+    margin-top: 4px;
+
+    margin-bottom: 5px;
+}
+
+
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
+
+.stButton > button {
+    border-radius: 12px;
+
+    min-height: 46px;
+
+    font-weight: 700;
+
+    transition: all 0.2s ease;
+}
+
+.stButton > button:hover {
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================================
+   DOWNLOAD BUTTONS
+   ========================================================== */
+
+.stDownloadButton > button {
+    border-radius: 12px;
+
+    min-height: 44px;
+
+    font-weight: 700;
+}
+
+
+/* ==========================================================
+   FORM
+   ========================================================== */
+
+[data-testid="stForm"] {
+    border: 1px solid rgba(148, 163, 184, 0.25);
+
+    border-radius: 16px;
+
+    padding: 18px;
+}
+
+
+/* ==========================================================
+   INPUT LABELS
+   ========================================================== */
+
+[data-testid="stWidgetLabel"] p {
+    font-weight: 650;
+}
+
+
+/* ==========================================================
+   REPORT CONTAINER
+   ========================================================== */
+
+.report-header {
+    background: linear-gradient(
+        135deg,
+        #1d4ed8,
+        #2563eb
+    );
+
+    border-radius: 16px;
+
+    padding: 20px 22px;
+
+    color: white !important;
+
+    margin-top: 12px;
+
+    margin-bottom: 18px;
+}
+
+.report-header h3 {
+    color: white !important;
+
+    margin: 0 0 5px 0;
+}
+
+.report-header p {
+    color: #dbeafe !important;
+
+    margin: 0;
+}
+
+
+/* ==========================================================
+   CHAT
+   ========================================================== */
+
+[data-testid="stChatMessage"] {
+    border-radius: 14px;
+
+    padding: 6px;
+}
+
+
+/* ==========================================================
+   SIDEBAR
+   ========================================================== */
+
+[data-testid="stSidebar"] {
+    border-right: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.sidebar-title {
+    font-size: 24px;
+
+    font-weight: 800;
+
+    margin-bottom: 3px;
+}
+
+.sidebar-subtitle {
+    font-size: 13px;
+
+    opacity: 0.72;
+
+    margin-bottom: 20px;
+}
+
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+
+.edupath-footer {
+    text-align: center;
+
+    opacity: 0.70;
+
+    font-size: 13px;
+
+    padding: 25px 5px 10px 5px;
+}
+
+
+/* ==========================================================
+   MOBILE RESPONSIVENESS
+   ========================================================== */
+
+@media (max-width: 768px) {
+
+    .block-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .edupath-hero {
+        padding: 30px 18px;
+    }
+
+    .edupath-title {
+        font-size: 33px;
+    }
+
+    .edupath-subtitle {
+        font-size: 17px;
+    }
+
+    .edupath-description {
+        font-size: 14px;
+    }
+}
+
+</style>
+""",
+    unsafe_allow_html=True,
 )
 
 
@@ -37,32 +369,35 @@ st.set_page_config(
 
 SYSTEM_PROMPT = """
 You are EduPath Pakistan, an AI-powered education and career
-counselor designed specifically for students in Pakistan.
+counselor designed for students in Pakistan.
 
-Your mission is to help students understand realistic
-education, career and skills pathways.
+Your job is to help students make realistic decisions about
+education, careers, skills and alternative pathways.
 
 You may communicate in:
 - English
 - Urdu
 - Roman Urdu
 
-IMPORTANT PRINCIPLES:
+IMPORTANT RULES:
 
 1. Never guarantee university admission.
 
-2. Never invent:
+2. Never guarantee employment.
+
+3. Never invent:
    - university admission requirements
+   - merit percentages
    - fees
-   - deadlines
-   - scholarships
-   - eligibility criteria
+   - admission deadlines
+   - scholarship amounts
+   - current eligibility criteria
 
-3. If current university information is required,
-tell the student to verify it through the institution's
-official source.
+4. If current institutional information is needed, clearly tell
+the student to verify it from the official university,
+government, scholarship or institution website.
 
-4. University is not the only possible pathway.
+5. University is not the only valid pathway.
 
 Consider:
 - Public universities
@@ -72,76 +407,100 @@ Consider:
 - DAE
 - Professional certifications
 - Online learning
-- Skills development
+- Skills training
 - Internships
 - Freelancing
 - Entrepreneurship
-- Gap-year preparation
+- Structured gap years
 
-5. Do not discourage students because of low marks.
+6. Never discourage students only because of low marks.
 
-6. Explain realistic options clearly.
+7. Recommendations should consider:
+   - academic level
+   - marks
+   - subjects
+   - city
+   - career goal
+   - budget
+   - gap-year preference
 
-7. Focus on:
+8. Give realistic priorities instead of a random list.
 
-"WHAT SHOULD THIS STUDENT DO NEXT?"
+9. When useful, provide:
+   - Primary pathway
+   - Alternative pathways
+   - Advantages
+   - Limitations
+   - Skills
+   - Immediate actions
+   - 90-day roadmap
 
-8. Recommendations should consider:
-- Education
-- Marks
-- Subjects
-- City
-- Career goal
-- Budget
-- Gap year preference
+10. Use simple, supportive and practical language.
 
-9. When appropriate provide:
-- Primary recommendation
-- Alternative options
-- Advantages
-- Disadvantages
-- Skills
-- Action plan
+The central question you must answer is:
 
-10. Keep language simple and practical.
-
-11. Never fabricate facts.
-
-12. When information is uncertain, explicitly say that
-it needs to be verified.
+"What should this student do next?"
 """
 
 
 # ============================================================
-# GET GROQ CLIENT
+# SESSION STATE
 # ============================================================
 
-def get_client():
+if "profile" not in st.session_state:
+    st.session_state.profile = {}
+
+if "report" not in st.session_state:
+    st.session_state.report = None
+
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+
+# ============================================================
+# GROQ CLIENT
+# ============================================================
+
+@st.cache_resource
+def get_groq_client():
 
     try:
-
         api_key = st.secrets.get(
             "GROQ_API_KEY",
-            os.environ.get("GROQ_API_KEY")
+            os.environ.get("GROQ_API_KEY"),
         )
-
     except Exception:
-
         api_key = os.environ.get("GROQ_API_KEY")
 
-
     if not api_key:
-
         return None
 
-
-    return Groq(
-        api_key=api_key
-    )
+    return Groq(api_key=api_key)
 
 
 # ============================================================
-# BUILD STUDENT PROFILE
+# MODEL SELECTION
+# ============================================================
+
+@st.cache_data(ttl=3600)
+def get_model_name():
+
+    try:
+        configured_model = st.secrets.get(
+            "GROQ_MODEL",
+            "",
+        )
+    except Exception:
+        configured_model = ""
+
+    if configured_model:
+        return configured_model
+
+    return "openai/gpt-oss-120b"
+
+
+# ============================================================
+# BUILD PROFILE
 # ============================================================
 
 def build_profile(profile):
@@ -176,1277 +535,1093 @@ Considering Gap Year:
 
 
 # ============================================================
-# GROQ CALL
+# CALL GROQ
 # ============================================================
 
 def call_groq(
     messages,
     max_tokens=2000,
-    temperature=0.4
+    temperature=0.4,
 ):
 
-    client = get_client()
-
+    client = get_groq_client()
 
     if client is None:
-
         raise RuntimeError(
-            "GROQ_API_KEY is not configured. "
-            "Please add it in Streamlit Secrets."
+            "Groq API key is missing. "
+            "Add GROQ_API_KEY in Streamlit App Secrets."
         )
 
+    model = get_model_name()
 
     try:
 
-        model = st.secrets.get(
-            "GROQ_MODEL",
-            "openai/gpt-oss-120b"
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=temperature,
         )
 
-    except Exception:
+        return response.choices[0].message.content
 
-        model = "openai/gpt-oss-120b"
+    except Exception as error:
 
-
-    response = client.chat.completions.create(
-
-        model=model,
-
-        messages=messages,
-
-        temperature=temperature,
-
-        max_tokens=max_tokens
-    )
-
-
-    return response.choices[0].message.content
+        raise RuntimeError(
+            f"Groq API error using model '{model}': {error}"
+        )
 
 
 # ============================================================
-# GENERATE REPORT
+# REPORT GENERATION
 # ============================================================
 
 def generate_report(profile):
 
-    report_prompt = f"""
-Create a personalized education and career guidance report
-for the following Pakistani student.
+    prompt = f"""
+Create a detailed personalized education and career guidance
+report for this Pakistani student.
 
 {build_profile(profile)}
 
-Return the report using this structure:
+Use the following exact structure:
 
-# 🎓 EduPath Pakistan — Personalized Education Report
+
+# EduPath Pakistan - Personalized Education Report
 
 
 ## 1. Student Profile
 
-Summarize the student's academic background.
+Briefly summarize the student's current background.
 
 
-## 2. Situation Analysis
+## 2. Current Situation Analysis
 
-Explain the student's current position.
+Explain the student's current position and the main decision
+they need to make.
 
 
 ## 3. Recommended Primary Pathway
 
+Give ONE main recommendation.
+
 Explain:
 
-- Why this pathway fits
-- What the student should do
-- What they should avoid
+- Why it fits
+- What the student should focus on
+- Main benefits
+- Main limitations
 
 
 ## 4. Alternative Pathways
 
 Provide 2 to 4 realistic alternatives.
 
-For each alternative include:
+For each include:
 
 - Pathway
-- Why it may work
-- Main advantage
-- Main limitation
+- Why it may fit
+- Advantage
+- Limitation
 
 
 ## 5. Career Direction
 
-Discuss suitable career and skill directions.
+Explain suitable career directions based on:
+
+- Academic background
+- Interests
+- Desired career
+- Financial situation
 
 
 ## 6. Skills to Develop
 
 Separate into:
 
-- Short-term skills
-- Medium-term skills
+### Short-Term Skills
+
+### Medium-Term Skills
 
 
 ## 7. University Strategy
 
-Explain how the student should approach university
-applications if appropriate.
+Explain how the student should approach university education
+if it is appropriate.
 
-Do not invent admission requirements, fees or deadlines.
+Do not invent specific current requirements, merit, fees,
+deadlines or scholarships.
+
+Tell the student to verify current information from official
+sources.
 
 
 ## 8. Financial Strategy
 
-Consider:
+Consider the student's budget.
+
+Discuss appropriate possibilities including:
 
 - Public universities
-- Scholarships
+- Lower-cost options
 - Financial aid
-- Lower-cost education
-- Certifications
+- Scholarships
 - Skills pathways
+- Certifications
 
 
 ## 9. 90-Day Action Plan
 
+### Days 1-30: Understand
 
-### Days 1–30 — Understand
+Give concrete actions.
 
-Provide specific actions.
+### Days 31-60: Prepare
 
+Give concrete actions.
 
-### Days 31–60 — Prepare
+### Days 61-90: Act
 
-Provide specific actions.
-
-
-### Days 61–90 — Act
-
-Provide specific actions.
+Give concrete actions.
 
 
-## 10. Risks & Things to Verify
+## 10. Risks and Things to Verify
 
-List information that must be checked independently.
-
-
-## 11. Immediate Next Steps
-
-Give the student the five most important actions.
+Clearly identify information that needs official verification.
 
 
-## 12. Encouragement
+## 11. Five Immediate Next Steps
 
-End with a short realistic and constructive message.
+Give exactly five prioritized actions.
+
+
+## 12. Final Guidance
+
+End with a short realistic and motivating conclusion.
 
 
 IMPORTANT:
 
-- Do not fabricate facts.
-- Do not guarantee admission.
-- Do not guarantee employment.
-- Use simple language.
-- Do not assume university is the only option.
-- Tell the student to verify current information
-  through official sources.
+Do not fabricate facts.
+
+Do not guarantee admission.
+
+Do not guarantee employment.
+
+Prioritize practical action.
+
+Use simple language.
 """
 
-
     messages = [
-
         {
             "role": "system",
-            "content": SYSTEM_PROMPT
+            "content": SYSTEM_PROMPT,
         },
-
         {
             "role": "user",
-            "content": report_prompt
-        }
-
+            "content": prompt,
+        },
     ]
 
-
     return call_groq(
-
         messages=messages,
-
         max_tokens=4000,
-
-        temperature=0.3
+        temperature=0.3,
     )
 
 
 # ============================================================
-# AI COUNSELOR
+# COUNSELOR
 # ============================================================
 
 def counselor_reply(
     profile,
     chat_history,
-    message
+    message,
 ):
 
     messages = [
-
         {
             "role": "system",
-            "content": SYSTEM_PROMPT
+            "content": SYSTEM_PROMPT,
         },
-
         {
             "role": "system",
-            "content": build_profile(profile)
-        }
-
+            "content": build_profile(profile),
+        },
     ]
 
-
-    for item in chat_history:
+    # Keep recent conversation
+    for item in chat_history[-12:]:
 
         if item.get("role") in [
             "user",
-            "assistant"
+            "assistant",
         ]:
 
-            messages.append(item)
-
+            messages.append(
+                {
+                    "role": item["role"],
+                    "content": item["content"],
+                }
+            )
 
     messages.append(
-
         {
             "role": "user",
-            "content": message
+            "content": message,
         }
-
     )
-
 
     return call_groq(
-
         messages=messages,
-
         max_tokens=1800,
-
-        temperature=0.4
+        temperature=0.4,
     )
 
 
 # ============================================================
-# PDF CREATION
+# PDF HELPERS
 # ============================================================
+
+def clean_pdf_text(text):
+
+    # Remove emoji and other unsupported symbols for
+    # ReportLab's standard fonts.
+
+    return re.sub(
+        r"[^\x00-\x7F]+",
+        " ",
+        text,
+    )
+
 
 def markdown_to_pdf(text):
 
+    text = clean_pdf_text(text)
+
     buffer = BytesIO()
 
-
     document = SimpleDocTemplate(
-
         buffer,
-
         pagesize=A4,
-
-        rightMargin=0.65 * inch,
-
-        leftMargin=0.65 * inch,
-
-        topMargin=0.65 * inch,
-
-        bottomMargin=0.65 * inch
+        rightMargin=0.7 * inch,
+        leftMargin=0.7 * inch,
+        topMargin=0.7 * inch,
+        bottomMargin=0.7 * inch,
+        title="EduPath Pakistan Education Report",
     )
-
 
     styles = getSampleStyleSheet()
 
-
     title_style = ParagraphStyle(
-
-        "ReportTitle",
-
+        "EduPathTitle",
         parent=styles["Title"],
-
         alignment=TA_CENTER,
-
         fontSize=18,
-
-        leading=22,
-
-        spaceAfter=16
+        leading=23,
+        spaceAfter=18,
+        textColor="#1d4ed8",
     )
 
-
-    heading_style = ParagraphStyle(
-
-        "ReportHeading",
-
+    h2_style = ParagraphStyle(
+        "EduPathH2",
         parent=styles["Heading2"],
-
         fontSize=13,
-
         leading=17,
-
-        spaceBefore=10,
-
-        spaceAfter=6
+        spaceBefore=12,
+        spaceAfter=7,
+        textColor="#0f172a",
     )
 
+    h3_style = ParagraphStyle(
+        "EduPathH3",
+        parent=styles["Heading3"],
+        fontSize=11,
+        leading=15,
+        spaceBefore=8,
+        spaceAfter=5,
+    )
 
     body_style = ParagraphStyle(
-
-        "ReportBody",
-
+        "EduPathBody",
         parent=styles["BodyText"],
-
         fontSize=9.5,
-
         leading=14,
-
-        spaceAfter=6
+        spaceAfter=6,
     )
 
-
     story = []
-
 
     for raw_line in text.splitlines():
 
         line = raw_line.strip()
-
 
         if not line:
 
             story.append(
                 Spacer(
                     1,
-                    5
+                    5,
                 )
             )
 
             continue
 
-
-        safe_line = (
-
+        safe = (
             line
-            .replace(
-                "&",
-                "&amp;"
-            )
-            .replace(
-                "<",
-                "&lt;"
-            )
-            .replace(
-                ">",
-                "&gt;"
-            )
-
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
         )
-
 
         if line.startswith("# "):
 
             story.append(
-
                 Paragraph(
-                    safe_line[2:],
-                    title_style
+                    safe[2:],
+                    title_style,
                 )
-
             )
-
 
         elif line.startswith("## "):
 
             story.append(
-
                 Paragraph(
-                    safe_line[3:],
-                    heading_style
+                    safe[3:],
+                    h2_style,
                 )
-
             )
-
 
         elif line.startswith("### "):
 
             story.append(
-
                 Paragraph(
-                    safe_line[4:],
-                    heading_style
+                    safe[4:],
+                    h3_style,
                 )
-
             )
-
 
         elif line.startswith("- "):
 
             story.append(
-
                 Paragraph(
-                    "• " + safe_line[2:],
-                    body_style
+                    "• " + safe[2:],
+                    body_style,
                 )
-
             )
-
 
         else:
 
             story.append(
-
                 Paragraph(
-                    safe_line,
-                    body_style
+                    safe,
+                    body_style,
                 )
-
             )
-
 
     document.build(story)
 
-
     buffer.seek(0)
-
 
     return buffer.getvalue()
 
 
 # ============================================================
-# CUSTOM CSS
+# SIDEBAR PROFILE
 # ============================================================
 
-st.markdown(
-    """
-<style>
-
-
-/* =========================================================
-   HERO
-   ========================================================= */
-
-.hero {
-
-    padding: 35px 25px;
-
-    border-radius: 20px;
-
-    text-align: center;
-
-    background: linear-gradient(
-        135deg,
-        #eff6ff 0%,
-        #f8fafc 55%,
-        #e0ecff 100%
-    );
-
-    border: 1px solid #dbeafe;
-
-    margin-top: 10px;
-
-    margin-bottom: 30px;
-
-    box-shadow:
-        0 4px 18px
-        rgba(
-            0,
-            0,
-            0,
-            0.08
-        );
-}
-
-
-/* =========================================================
-   HERO TITLE
-   ========================================================= */
-
-.hero-title {
-
-    color: #1d4ed8 !important;
-
-    font-size: 42px !important;
-
-    font-weight: 800 !important;
-
-    line-height: 1.2 !important;
-
-    margin: 0 0 14px 0 !important;
-}
-
-
-/* =========================================================
-   HERO SUBTITLE
-   ========================================================= */
-
-.hero-subtitle {
-
-    color: #0f172a !important;
-
-    font-size: 20px !important;
-
-    font-weight: 700 !important;
-
-    line-height: 1.5 !important;
-
-    margin: 8px 0 !important;
-}
-
-
-/* =========================================================
-   HERO DESCRIPTION
-   ========================================================= */
-
-.hero-description {
-
-    color: #334155 !important;
-
-    font-size: 17px !important;
-
-    font-weight: 500 !important;
-
-    line-height: 1.6 !important;
-
-    margin: 8px 0 0 0 !important;
-}
-
-
-/* =========================================================
-   STREAMLIT HEADINGS
-   ========================================================= */
-
-[data-testid="stHeading"] {
-
-    font-weight: 700;
-}
-
-
-/* =========================================================
-   INPUT LABELS
-   ========================================================= */
-
-[data-testid="stWidgetLabel"] {
-
-    font-weight: 600 !important;
-}
-
-
-/* =========================================================
-   FORM BORDER
-   ========================================================= */
-
-[data-testid="stForm"] {
-
-    border-radius: 15px !important;
-
-    padding: 20px !important;
-}
-
-
-/* =========================================================
-   BUTTONS
-   ========================================================= */
-
-.stButton button {
-
-    border-radius: 10px !important;
-
-    font-weight: 600 !important;
-}
-
-
-/* =========================================================
-   DOWNLOAD BUTTONS
-   ========================================================= */
-
-.stDownloadButton button {
-
-    border-radius: 10px !important;
-
-    font-weight: 600 !important;
-}
-
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 768px) {
-
-    .hero {
-
-        padding: 25px 15px;
-
-    }
-
-
-    .hero-title {
-
-        font-size: 31px !important;
-
-    }
-
-
-    .hero-subtitle {
-
-        font-size: 17px !important;
-
-    }
-
-
-    .hero-description {
-
-        font-size: 15px !important;
-
-    }
-
-}
-
-
-</style>
-""",
-    unsafe_allow_html=True
-)
-
-
-# ============================================================
-# HERO HTML
-# ============================================================
-
-st.markdown(
-    """
-<div class="hero">
-
-    <div class="hero-title">
-
-        🎓 EduPath Pakistan
-
-    </div>
-
-
-    <div class="hero-subtitle">
-
-        AI-Powered Education & Career Guidance
-
-    </div>
-
-
-    <div class="hero-description">
-
-        Didn't get university admission?
-        Your educational journey doesn't have to stop.
-
-    </div>
-
-</div>
-""",
-    unsafe_allow_html=True
-)
-
-
-# ============================================================
-# INITIALIZE SESSION STATE
-# ============================================================
-
-if "profile" not in st.session_state:
-
-    st.session_state.profile = {}
-
-
-if "report" not in st.session_state:
-
-    st.session_state.report = None
-
-
-if "chat_history" not in st.session_state:
-
-    st.session_state.chat_history = []
-
-
-# ============================================================
-# STUDENT PROFILE
-# ============================================================
-
-st.subheader(
-    "👤 Student Profile"
-)
-
-
-st.write(
-    "Enter your information so EduPath can provide "
-    "personalized education and career guidance."
-)
-
-
-with st.form(
-    "student_profile_form"
-):
-
-
-    column1, column2 = st.columns(2)
-
-
-    with column1:
-
+with st.sidebar:
+
+    st.markdown(
+        '<div class="sidebar-title">🎓 EduPath</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        '<div class="sidebar-subtitle">'
+        'Build your student profile before generating guidance.'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    with st.form(
+        "student_profile_form",
+        clear_on_submit=False,
+    ):
 
         name = st.text_input(
-
             "Full Name",
-
-            placeholder="e.g. Ali Khan"
+            value=st.session_state.profile.get(
+                "name",
+                "",
+            ),
+            placeholder="e.g. Ali Khan",
         )
 
+        education_options = [
+            "Intermediate",
+            "Matric",
+            "FSc Pre-Medical",
+            "FSc Pre-Engineering",
+            "ICS",
+            "FA",
+            "ICom",
+            "A-Level",
+            "DAE",
+            "Bachelor's",
+            "Other",
+        ]
 
-        education = st.selectbox(
-
-            "Education Level",
-
-            [
-
+        current_education = (
+            st.session_state.profile.get(
+                "education",
                 "Intermediate",
-
-                "Matric",
-
-                "FSc Pre-Medical",
-
-                "FSc Pre-Engineering",
-
-                "ICS",
-
-                "FA",
-
-                "ICom",
-
-                "A-Level",
-
-                "DAE",
-
-                "Bachelor's",
-
-                "Other"
-
-            ]
-        )
-
-
-        marks = st.text_input(
-
-            "Marks / Percentage",
-
-            placeholder="e.g. 68%"
-        )
-
-
-        subjects = st.text_input(
-
-            "Major Subjects",
-
-            placeholder=(
-                "e.g. Mathematics, "
-                "Physics, Chemistry"
             )
         )
 
+        try:
+            education_index = education_options.index(
+                current_education
+            )
+        except ValueError:
+            education_index = 0
 
-    with column2:
+        education = st.selectbox(
+            "Education Level",
+            education_options,
+            index=education_index,
+        )
 
+        marks = st.text_input(
+            "Marks / Percentage",
+            value=st.session_state.profile.get(
+                "marks",
+                "",
+            ),
+            placeholder="e.g. 68%",
+        )
+
+        subjects = st.text_input(
+            "Major Subjects",
+            value=st.session_state.profile.get(
+                "subjects",
+                "",
+            ),
+            placeholder="Mathematics, Physics...",
+        )
 
         city = st.text_input(
-
             "City",
-
-            placeholder="e.g. Multan"
+            value=st.session_state.profile.get(
+                "city",
+                "",
+            ),
+            placeholder="e.g. Multan",
         )
-
 
         career_goal = st.text_input(
-
             "Desired Career / Field",
-
-            placeholder="e.g. Computer Science"
+            value=st.session_state.profile.get(
+                "career_goal",
+                "",
+            ),
+            placeholder="e.g. Computer Science",
         )
 
+        budget_options = [
+            "Very limited",
+            "Limited",
+            "Moderate",
+            "Flexible",
+            "Not sure",
+        ]
+
+        current_budget = (
+            st.session_state.profile.get(
+                "budget",
+                "Limited",
+            )
+        )
+
+        try:
+            budget_index = budget_options.index(
+                current_budget
+            )
+        except ValueError:
+            budget_index = 1
 
         budget = st.selectbox(
-
             "Education Budget",
-
-            [
-
-                "Very limited",
-
-                "Limited",
-
-                "Moderate",
-
-                "Flexible",
-
-                "Not sure"
-
-            ]
+            budget_options,
+            index=budget_index,
         )
 
+        gap_options = [
+            "Yes",
+            "No",
+            "Not sure",
+        ]
+
+        current_gap = (
+            st.session_state.profile.get(
+                "gap_year",
+                "Not sure",
+            )
+        )
+
+        try:
+            gap_index = gap_options.index(
+                current_gap
+            )
+        except ValueError:
+            gap_index = 2
 
         gap_year = st.radio(
-
-            "Considering a Gap Year?",
-
-            [
-
-                "Yes",
-
-                "No",
-
-                "Not sure"
-
-            ],
-
-            horizontal=True
+            "Considering Gap Year?",
+            gap_options,
+            index=gap_index,
         )
 
-
-    save_profile = st.form_submit_button(
-
-        "💾 Save Student Profile",
-
-        use_container_width=True
-    )
-
-
-# ============================================================
-# SAVE PROFILE
-# ============================================================
-
-if save_profile:
-
-
-    st.session_state.profile = {
-
-        "name": name,
-
-        "education": education,
-
-        "marks": marks,
-
-        "subjects": subjects,
-
-        "city": city,
-
-        "career_goal": career_goal,
-
-        "budget": budget,
-
-        "gap_year": gap_year
-
-    }
-
-
-    st.success(
-        "Student profile saved successfully."
-    )
-
-
-# ============================================================
-# GENERATE REPORT
-# ============================================================
-
-st.divider()
-
-
-st.subheader(
-    "📊 Generate Your Education Report"
-)
-
-
-st.write(
-    """
-Generate a personalized assessment of your education
-situation, career direction, alternative pathways and
-90-day action plan.
-"""
-)
-
-
-generate_button = st.button(
-
-    "🚀 Generate My Education Report",
-
-    type="primary",
-
-    use_container_width=True
-)
-
-
-if generate_button:
-
-
-    if not st.session_state.profile:
-
-
-        st.warning(
-            "Please save your student profile first."
+        save_profile = st.form_submit_button(
+            "💾 Save Student Profile",
+            use_container_width=True,
+            type="primary",
         )
 
+    if save_profile:
 
-    else:
+        st.session_state.profile = {
+            "name": name.strip(),
+            "education": education,
+            "marks": marks.strip(),
+            "subjects": subjects.strip(),
+            "city": city.strip(),
+            "career_goal": career_goal.strip(),
+            "budget": budget,
+            "gap_year": gap_year,
+        }
 
-
-        with st.spinner(
-            "EduPath is preparing your personalized report..."
-        ):
-
-
-            try:
-
-
-                report = generate_report(
-                    st.session_state.profile
-                )
-
-
-                st.session_state.report = report
-
-
-                st.success(
-                    "Your education report is ready."
-                )
-
-
-            except Exception as error:
-
-
-                st.error(
-                    f"Could not generate report: {error}"
-                )
-
-
-# ============================================================
-# DISPLAY REPORT
-# ============================================================
-
-if st.session_state.report:
-
+        st.success(
+            "Profile saved successfully."
+        )
 
     st.divider()
 
+    if st.session_state.profile:
 
-    st.subheader(
-        "📄 Your Personalized Report"
-    )
+        st.markdown("### Current Profile")
 
-
-    st.markdown(
-        st.session_state.report
-    )
-
-
-    # --------------------------------------------------------
-    # CREATE DOWNLOAD FILES
-    # --------------------------------------------------------
-
-    try:
-
-
-        pdf_data = markdown_to_pdf(
-            st.session_state.report
+        st.caption(
+            f"🎓 {st.session_state.profile.get('education', '')}"
         )
 
+        if st.session_state.profile.get("career_goal"):
 
-    except Exception as pdf_error:
+            st.caption(
+                "🎯 "
+                + st.session_state.profile["career_goal"]
+            )
 
+        if st.session_state.profile.get("city"):
 
-        pdf_data = None
-
-
-        st.warning(
-            f"PDF generation issue: {pdf_error}"
-        )
-
-
-    txt_data = (
-        st.session_state.report
-        .encode("utf-8")
-    )
-
-
-    download_column1, download_column2 = (
-        st.columns(2)
-    )
-
-
-    with download_column1:
-
-
-        if pdf_data:
-
-
-            st.download_button(
-
-                label="⬇️ Download Report as PDF",
-
-                data=pdf_data,
-
-                file_name=(
-                    "EduPath_Pakistan_"
-                    "Education_Report.pdf"
-                ),
-
-                mime="application/pdf",
-
-                use_container_width=True
+            st.caption(
+                "📍 "
+                + st.session_state.profile["city"]
             )
 
 
-    with download_column2:
-
-
-        st.download_button(
-
-            label="⬇️ Download Report as TXT",
-
-            data=txt_data,
-
-            file_name=(
-                "EduPath_Pakistan_"
-                "Education_Report.txt"
-            ),
-
-            mime="text/plain",
-
-            use_container_width=True
-        )
-
-
 # ============================================================
-# AI COUNSELOR
+# HERO
+# IMPORTANT: HTML starts at column 1 to avoid Markdown
+# interpreting it as a code block.
 # ============================================================
 
-st.divider()
+hero_html = """<div class="edupath-hero">
+<div class="edupath-title">🎓 EduPath Pakistan</div>
+<div class="edupath-subtitle">AI-Powered Education &amp; Career Guidance</div>
+<div class="edupath-description">Didn't get university admission? Your educational journey doesn't have to stop.</div>
+</div>"""
 
-
-st.subheader(
-    "💬 AI Education Counselor"
-)
-
-
-st.write(
-    """
-Ask questions about your education, career,
-university strategy, skills, scholarships or gap year.
-"""
+st.markdown(
+    hero_html,
+    unsafe_allow_html=True,
 )
 
 
 # ============================================================
-# DISPLAY PREVIOUS CHAT
+# FEATURE CARDS
 # ============================================================
 
-for chat_message in st.session_state.chat_history:
+feature1, feature2, feature3 = st.columns(3)
 
+with feature1:
 
-    with st.chat_message(
-        chat_message["role"]
-    ):
+    st.markdown(
+        """
+<div class="feature-card">
+<h3>🎓 Education Pathways</h3>
+<p>
+Explore realistic university, technical,
+vocational and alternative education routes.
+</p>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
+with feature2:
 
-        st.markdown(
-            chat_message["content"]
-        )
+    st.markdown(
+        """
+<div class="feature-card">
+<h3>💼 Career Direction</h3>
+<p>
+Understand career options based on your
+education, interests, budget and goals.
+</p>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+with feature3:
+
+    st.markdown(
+        """
+<div class="feature-card">
+<h3>🗺️ Personal Roadmap</h3>
+<p>
+Generate a personalized 30, 60 and 90-day
+plan with practical next actions.
+</p>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
 
 # ============================================================
-# CHAT INPUT
+# MAIN TABS
 # ============================================================
 
-user_message = st.chat_input(
-    "Ask your education counselor..."
+report_tab, counselor_tab, roadmap_tab = st.tabs(
+    [
+        "📊 Personalized Report",
+        "💬 AI Counselor",
+        "🗺️ 90-Day Framework",
+    ]
 )
 
 
-if user_message:
+# ============================================================
+# REPORT TAB
+# ============================================================
 
+with report_tab:
+
+    st.markdown(
+        '<div class="section-title">'
+        '📊 Personalized Education Report'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.caption(
+        "Generate an AI-powered analysis based on "
+        "the student profile saved in the sidebar."
+    )
 
     if not st.session_state.profile:
 
-
-        st.warning(
-            "Please save your student profile "
-            "before starting the chat."
+        st.info(
+            "👈 Complete and save your student profile "
+            "from the sidebar first."
         )
-
 
     else:
 
+        profile = st.session_state.profile
 
-        # ----------------------------------------------------
-        # ADD USER MESSAGE
-        # ----------------------------------------------------
-
-        st.session_state.chat_history.append(
-
-            {
-
-                "role": "user",
-
-                "content": user_message
-
-            }
-
+        summary1, summary2, summary3, summary4 = (
+            st.columns(4)
         )
 
+        summary1.metric(
+            "Education",
+            profile.get(
+                "education",
+                "Not provided",
+            ),
+        )
 
-        with st.chat_message(
-            "user"
-        ):
+        summary2.metric(
+            "Marks",
+            profile.get(
+                "marks",
+                "Not provided",
+            ) or "Not provided",
+        )
 
+        summary3.metric(
+            "Career Goal",
+            profile.get(
+                "career_goal",
+                "Not provided",
+            ) or "Not provided",
+        )
 
-            st.markdown(
-                user_message
-            )
+        summary4.metric(
+            "Budget",
+            profile.get(
+                "budget",
+                "Not provided",
+            ),
+        )
 
+        st.write("")
 
-        # ----------------------------------------------------
-        # GET AI RESPONSE
-        # ----------------------------------------------------
+        generate_report_button = st.button(
+            "🚀 Generate My Education Report",
+            type="primary",
+            use_container_width=True,
+        )
 
-        with st.chat_message(
-            "assistant"
-        ):
-
+        if generate_report_button:
 
             with st.spinner(
-                "EduPath is thinking..."
+                "Analyzing your profile and building "
+                "your personalized roadmap..."
             ):
-
 
                 try:
 
-
-                    response = counselor_reply(
-
-                        profile=st.session_state.profile,
-
-                        chat_history=(
-                            st.session_state.chat_history[:-1]
-                        ),
-
-                        message=user_message
+                    st.session_state.report = (
+                        generate_report(
+                            st.session_state.profile
+                        )
                     )
 
-
-                    st.markdown(
-                        response
+                    st.success(
+                        "Your personalized report is ready."
                     )
-
-
-                    st.session_state.chat_history.append(
-
-                        {
-
-                            "role": "assistant",
-
-                            "content": response
-
-                        }
-
-                    )
-
 
                 except Exception as error:
 
-
                     st.error(
-                        f"AI counselor error: {error}"
+                        str(error)
                     )
 
+        if st.session_state.report:
+
+            st.markdown(
+                """<div class="report-header">
+<h3>📄 Your Personalized Guidance Report</h3>
+<p>Generated from your saved EduPath student profile.</p>
+</div>""",
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                st.session_state.report
+            )
+
+            st.divider()
+
+            try:
+
+                pdf_data = markdown_to_pdf(
+                    st.session_state.report
+                )
+
+            except Exception as pdf_error:
+
+                pdf_data = None
+
+                st.warning(
+                    "The report was generated successfully, "
+                    f"but PDF creation failed: {pdf_error}"
+                )
+
+            text_data = (
+                st.session_state.report
+                .encode("utf-8")
+            )
+
+            download1, download2 = st.columns(2)
+
+            with download1:
+
+                if pdf_data:
+
+                    st.download_button(
+                        label="📥 Download PDF Report",
+                        data=pdf_data,
+                        file_name=(
+                            "EduPath_Pakistan_"
+                            "Education_Report.pdf"
+                        ),
+                        mime="application/pdf",
+                        use_container_width=True,
+                        type="primary",
+                    )
+
+            with download2:
+
+                st.download_button(
+                    label="📝 Download TXT Report",
+                    data=text_data,
+                    file_name=(
+                        "EduPath_Pakistan_"
+                        "Education_Report.txt"
+                    ),
+                    mime="text/plain",
+                    use_container_width=True,
+                )
+
 
 # ============================================================
-# 90 DAY FRAMEWORK
+# COUNSELOR TAB
 # ============================================================
 
-st.divider()
-
-
-st.subheader(
-    "🗺️ EduPath 90-Day Framework"
-)
-
-
-framework1, framework2, framework3 = (
-    st.columns(3)
-)
-
-
-with framework1:
-
+with counselor_tab:
 
     st.markdown(
-        """
-### 📅 Days 1–30
-
-**UNDERSTAND**
-
-- Assess your options
-- Identify suitable fields
-- Research programs
-- Identify skill gaps
-"""
+        '<div class="section-title">'
+        '💬 AI Education Counselor'
+        '</div>',
+        unsafe_allow_html=True,
     )
 
+    st.caption(
+        "Ask follow-up questions based on your "
+        "saved academic profile."
+    )
 
-with framework2:
+    if not st.session_state.profile:
 
+        st.info(
+            "👈 Save your student profile in the "
+            "sidebar before starting the counselor."
+        )
+
+    else:
+
+        starter1, starter2, starter3 = (
+            st.columns(3)
+        )
+
+        if starter1.button(
+            "I didn't get admission",
+            use_container_width=True,
+        ):
+
+            st.session_state.pending_question = (
+                "I didn't get university admission. "
+                "What should I do next?"
+            )
+
+        if starter2.button(
+            "Should I take a gap year?",
+            use_container_width=True,
+        ):
+
+            st.session_state.pending_question = (
+                "Should I take a gap year? "
+                "Please analyze it using my profile."
+            )
+
+        if starter3.button(
+            "What skills should I learn?",
+            use_container_width=True,
+        ):
+
+            st.session_state.pending_question = (
+                "Which skills should I start learning "
+                "based on my career goal?"
+            )
+
+        st.divider()
+
+        for message in st.session_state.chat_history:
+
+            with st.chat_message(
+                message["role"]
+            ):
+
+                st.markdown(
+                    message["content"]
+                )
+
+        typed_message = st.chat_input(
+            "Ask EduPath about education, careers, skills..."
+        )
+
+        pending_message = st.session_state.pop(
+            "pending_question",
+            None,
+        )
+
+        user_message = (
+            typed_message
+            if typed_message
+            else pending_message
+        )
+
+        if user_message:
+
+            st.session_state.chat_history.append(
+                {
+                    "role": "user",
+                    "content": user_message,
+                }
+            )
+
+            with st.chat_message("user"):
+
+                st.markdown(
+                    user_message
+                )
+
+            with st.chat_message("assistant"):
+
+                with st.spinner(
+                    "EduPath is analyzing your question..."
+                ):
+
+                    try:
+
+                        answer = counselor_reply(
+                            st.session_state.profile,
+                            st.session_state.chat_history[:-1],
+                            user_message,
+                        )
+
+                        st.markdown(
+                            answer
+                        )
+
+                        st.session_state.chat_history.append(
+                            {
+                                "role": "assistant",
+                                "content": answer,
+                            }
+                        )
+
+                    except Exception as error:
+
+                        st.error(
+                            str(error)
+                        )
+
+        if st.session_state.chat_history:
+
+            if st.button(
+                "🗑️ Clear Conversation",
+            ):
+
+                st.session_state.chat_history = []
+
+                st.rerun()
+
+
+# ============================================================
+# ROADMAP TAB
+# ============================================================
+
+with roadmap_tab:
 
     st.markdown(
-        """
-### 📅 Days 31–60
+        '<div class="section-title">'
+        '🗺️ EduPath 90-Day Framework'
+        '</div>',
+        unsafe_allow_html=True,
+    )
 
-**PREPARE**
+    st.caption(
+        "A simple framework students can use while "
+        "planning their next education or career step."
+    )
+
+    phase1, phase2, phase3 = st.columns(3)
+
+    with phase1:
+
+        st.markdown(
+            """
+### 📘 Days 1–30
+
+#### UNDERSTAND
+
+- Assess your current position
+- Identify suitable fields
+- Research education pathways
+- Compare realistic alternatives
+- Identify major skill gaps
+- Define your main goal
+"""
+        )
+
+    with phase2:
+
+        st.markdown(
+            """
+### 🛠️ Days 31–60
+
+#### PREPARE
 
 - Build relevant skills
 - Prepare applications
 - Improve your academic profile
-- Explore financial options
+- Research financial options
+- Start a practical project
+- Organize required documents
 """
-    )
+        )
 
+    with phase3:
 
-with framework3:
+        st.markdown(
+            """
+### 🚀 Days 61–90
 
+#### ACT
 
-    st.markdown(
-        """
-### 📅 Days 61–90
-
-**ACT**
-
-- Apply to opportunities
-- Start projects
+- Apply to suitable opportunities
 - Contact institutions
+- Complete relevant projects
 - Review your progress
+- Update your strategy
+- Prepare the next 90-day cycle
+"""
+        )
+
+    st.divider()
+
+    st.info(
+        """
+**Important:** Your AI-generated personalized report
+should take priority over this general framework because
+it uses your actual academic profile.
 """
     )
 
 
 # ============================================================
-# IMPORTANT NOTICE
+# DISCLAIMER
 # ============================================================
 
 st.divider()
 
-
 st.warning(
     """
-EduPath provides AI-based informational guidance.
+⚠️ **Important:** EduPath provides AI-generated informational
+guidance. Admission requirements, merit criteria, fees,
+deadlines, scholarships and eligibility rules can change.
 
-Always verify current:
-
-• Admission requirements  
-• Fees  
-• Deadlines  
-• Eligibility  
-• Scholarships  
-
-through official university or institution sources.
+Always verify current information through official university,
+institution or government sources before making a final decision.
 """
 )
 
@@ -1456,29 +1631,11 @@ through official university or institution sources.
 # ============================================================
 
 st.markdown(
-    """
-<br>
-
-<div style="
-text-align:center;
-opacity:0.75;
-padding:20px;
-">
-
-<b>🎓 EduPath Pakistan</b>
-
-<br>
-
-AI-Powered Education & Career Guidance
-
-<br><br>
-
+    """<div class="edupath-footer">
+<strong>🎓 EduPath Pakistan</strong><br>
+AI-Powered Education &amp; Career Guidance<br><br>
 Helping students answer:
-
-<b>"What should I do next?"</b>
-
-</div>
-
-""",
-    unsafe_allow_html=True
+<strong>"What should I do next?"</strong>
+</div>""",
+    unsafe_allow_html=True,
 )
