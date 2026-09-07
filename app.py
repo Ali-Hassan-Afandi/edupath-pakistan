@@ -134,101 +134,190 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
+# ============================================================
+# EDUPATH PAKISTAN — HERO UI + FONT COLOR FIX
+# ============================================================
+
 st.markdown("""
+<style>
+
+/* =========================================================
+   HERO CONTAINER
+   ========================================================= */
+
+.hero {
+    padding: 35px 25px;
+    border-radius: 20px;
+    text-align: center;
+
+    /* Light background */
+    background: linear-gradient(
+        135deg,
+        #eff6ff 0%,
+        #f8fafc 50%,
+        #e0ecff 100%
+    );
+
+    border: 1px solid #dbeafe;
+
+    margin-top: 10px;
+    margin-bottom: 30px;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================================================
+   EDUPATH MAIN TITLE
+   ========================================================= */
+
+.hero h1 {
+    font-size: 42px !important;
+
+    /* BLUE FONT */
+    color: #1d4ed8 !important;
+
+    font-weight: 800 !important;
+
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+
+    line-height: 1.2 !important;
+}
+
+
+/* =========================================================
+   HERO NORMAL PARAGRAPH
+   ========================================================= */
+
+.hero p {
+
+    /* DARK GRAY FONT */
+    color: #334155 !important;
+
+    font-size: 17px !important;
+
+    line-height: 1.6 !important;
+
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+}
+
+
+/* =========================================================
+   AI-POWERED SUBHEADING
+   ========================================================= */
+
+.hero p strong,
+.hero p b {
+
+    /* VERY DARK FONT */
+    color: #0f172a !important;
+
+    font-size: 19px !important;
+
+    font-weight: 700 !important;
+}
+
+
+/* =========================================================
+   STREAMLIT HEADINGS
+   ========================================================= */
+
+/*
+Do not force Streamlit's normal headings to black.
+This allows Student Profile, Generate Report,
+AI Counselor etc. to remain readable in both
+dark mode and light mode.
+*/
+
+h1, h2, h3 {
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   FORM LABELS
+   ========================================================= */
+
+[data-testid="stWidgetLabel"] {
+    font-weight: 600 !important;
+}
+
+
+/* =========================================================
+   INPUT PLACEHOLDER
+   ========================================================= */
+
+input::placeholder {
+    opacity: 0.75 !important;
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.card {
+    padding: 18px;
+
+    border-radius: 15px;
+
+    border: 1px solid #e2e8f0;
+
+    margin-bottom: 12px;
+}
+
+
+/* =========================================================
+   MOBILE RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .hero {
+        padding: 25px 15px;
+    }
+
+    .hero h1 {
+        font-size: 32px !important;
+    }
+
+    .hero p {
+        font-size: 15px !important;
+    }
+
+    .hero p strong,
+    .hero p b {
+        font-size: 17px !important;
+    }
+}
+
+</style>
+
+
+<!-- ======================================================
+     EDUPATH HERO
+     ====================================================== -->
+
 <div class="hero">
-<h1>🎓 EduPath Pakistan</h1>
-<p><b>AI-Powered Education & Career Guidance</b></p>
-<p>Didn't get university admission? Your educational journey doesn't have to stop.</p>
+
+    <h1>
+        🎓 EduPath Pakistan
+    </h1>
+
+    <p>
+        <strong>
+            AI-Powered Education & Career Guidance
+        </strong>
+    </p>
+
+    <p>
+        Didn't get university admission?
+        Your educational journey doesn't have to stop.
+    </p>
+
 </div>
+
 """, unsafe_allow_html=True)
-
-if "profile" not in st.session_state: st.session_state.profile = {}
-if "report" not in st.session_state: st.session_state.report = None
-if "chat_history" not in st.session_state: st.session_state.chat_history = []
-
-st.subheader("👤 Student Profile")
-with st.form("profile_form"):
-    c1,c2 = st.columns(2)
-    with c1:
-        name = st.text_input("Full Name", placeholder="e.g. Ali Khan")
-        education = st.selectbox("Education Level", ["Intermediate","Matric","FSc Pre-Medical","FSc Pre-Engineering","ICS","FA","ICom","A-Level","DAE","Bachelor's","Other"])
-        marks = st.text_input("Marks / Percentage", placeholder="e.g. 68%")
-        subjects = st.text_input("Major Subjects", placeholder="e.g. Mathematics, Physics, Chemistry")
-    with c2:
-        city = st.text_input("City", placeholder="e.g. Multan")
-        career_goal = st.text_input("Desired Career / Field", placeholder="e.g. Computer Science")
-        budget = st.selectbox("Education Budget", ["Very limited","Limited","Moderate","Flexible","Not sure"])
-        gap_year = st.radio("Considering a Gap Year?", ["Yes","No","Not sure"], horizontal=True)
-    save = st.form_submit_button("💾 Save Student Profile", use_container_width=True)
-
-if save:
-    st.session_state.profile = dict(name=name, education=education, marks=marks,
-        subjects=subjects, city=city, career_goal=career_goal, budget=budget, gap_year=gap_year)
-    st.success("Student profile saved successfully.")
-
-st.divider()
-st.subheader("📊 Generate Your Education Report")
-st.write("Get a personalized assessment, pathway recommendation, career direction and 90-day action plan.")
-
-if st.button("🚀 Generate My Education Report", type="primary", use_container_width=True):
-    if not st.session_state.profile:
-        st.warning("Please save your student profile first.")
-    else:
-        with st.spinner("EduPath is preparing your personalized report..."):
-            try:
-                st.session_state.report = generate_report(st.session_state.profile)
-                st.success("Your report is ready.")
-            except Exception as e:
-                st.error(f"Could not generate the report: {e}")
-
-if st.session_state.report:
-    st.divider()
-    st.subheader("📄 Your Personalized Report")
-    st.markdown(st.session_state.report)
-    pdf = markdown_to_pdf(st.session_state.report)
-    txt = st.session_state.report.encode("utf-8")
-    d1,d2 = st.columns(2)
-    with d1:
-        st.download_button("⬇️ Download Report as PDF", pdf,
-            "EduPath_Pakistan_Education_Report.pdf", "application/pdf",
-            use_container_width=True)
-    with d2:
-        st.download_button("⬇️ Download Report as TXT", txt,
-            "EduPath_Pakistan_Education_Report.txt", "text/plain",
-            use_container_width=True)
-
-st.divider()
-st.subheader("💬 AI Education Counselor")
-st.write("Ask questions about education, careers, university strategy, skills or gap years.")
-
-for msg in st.session_state.chat_history:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-
-user_message = st.chat_input("Ask your education counselor...")
-if user_message:
-    if not st.session_state.profile:
-        st.warning("Please save your student profile before starting the chat.")
-    else:
-        st.session_state.chat_history.append({"role":"user","content":user_message})
-        with st.chat_message("user"): st.markdown(user_message)
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                try:
-                    answer = counselor_reply(st.session_state.profile,
-                                             st.session_state.chat_history[:-1],
-                                             user_message)
-                    st.markdown(answer)
-                    st.session_state.chat_history.append({"role":"assistant","content":answer})
-                except Exception as e:
-                    st.error(f"Could not contact the AI counselor: {e}")
-
-st.divider()
-st.subheader("🗺️ EduPath 90-Day Framework")
-c1,c2,c3 = st.columns(3)
-with c1: st.markdown("### 📅 Days 1–30\n**UNDERSTAND**\n\n- Assess options\n- Identify suitable fields\n- Research programs\n- Identify skill gaps")
-with c2: st.markdown("### 📅 Days 31–60\n**PREPARE**\n\n- Build relevant skills\n- Prepare applications\n- Improve profile\n- Explore financial options")
-with c3: st.markdown("### 📅 Days 61–90\n**ACT**\n\n- Apply to opportunities\n- Start projects\n- Contact institutions\n- Review progress")
-
-st.info("⚠️ EduPath provides AI-based informational guidance. Always verify current admission requirements, fees, deadlines, eligibility and scholarship information through official sources.")
-st.caption("EduPath Pakistan — Helping students answer: “What should I do next?”")
