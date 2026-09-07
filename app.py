@@ -126,13 +126,6 @@ def markdown_to_pdf(text):
     doc.build(story)
     return buf.getvalue()
 
-st.markdown("""
-<style>
-.hero{padding:30px;border-radius:20px;text-align:center;background:linear-gradient(135deg,#eff6ff,#f8fafc);border:1px solid #dbeafe;margin-bottom:25px}
-.hero h1{font-size:40px;margin-bottom:8px}.hero p{font-size:17px}
-.card{padding:18px;border-radius:15px;border:1px solid #e2e8f0}
-</style>
-""", unsafe_allow_html=True)
 
 
 # ============================================================
